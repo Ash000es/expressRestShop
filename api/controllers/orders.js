@@ -37,8 +37,8 @@ exports.orders_GET_all = (req, res, next) => {
     })
 }
 exports.orders_POST_order = (req, res, next) => {
-  const susu = req.body.productId
-  console.log(susu, 'kkk')
+  // const susu = req.body.productId
+  // console.log(susu, 'kkk')
   Product.findById(req.body.productId)
     .then((product) => {
       if (!product) {

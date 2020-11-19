@@ -65,8 +65,6 @@ exports.products_GET_singleProduct = (req, res, next) => {
 }
 
 exports.products_POST_product = (req, res, next) => {
-  console.log(req.file, 'kk')
-
   const convertedPrice = Number(req.body.productPrice)
   const convertedInventory = Number(req.body.productInventory)
 
