@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const mongoose = require('mongoose')
 const multer = require('multer')
+const checkAuth = require('../Auth/checkAuthen')
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -68,9 +69,9 @@ router.get('/', (req, res, next) => {
 })
 
 // POST new product route
-router.post('/', upload.single('productNewImage'), (req, res, next) => {
+router.post('/', checkAuth, upload.single('productNewImage'), (req, res, next) => {
   console.log(req.file, 'kk')
-
+  
   const convertedPrice = Number(req.body.productPrice)
   const convertedInventory = Number(req.body.productInventory)
 
@@ -128,7 +129,7 @@ router.get('/:productId', (req, res, next) => {
 })
 
 // UPDATE product  by ID route
-router.patch('/:productId', (req, res, next) => {
+router.patch('/:productId', checkAuth, (req, res, next) => {
   const id = req.params.productId
 
   // to set it the update dynamically you need to convert the req object at the client to an []
@@ -157,7 +158,7 @@ router.patch('/:productId', (req, res, next) => {
     })
 })
 // DELETE product by ID route
-router.delete('/:productId', (req, res, next) => {
+router.delete('/:productId', checkAuth, (req, res, next) => {
   const id = req.params.productId
   Product.remove({
     _id: id,
