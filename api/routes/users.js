@@ -1,15 +1,17 @@
 const express = require('express')
 const router = express.Router()
 const mongoose = require('mongoose')
-const User = require('../models/user')
+const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
+const User = require('../models/user')
+
 
 // get order route
 router.get('/', (req, res, next) => {
-    User.find()
+  User.find()
     .exec()
-    .then(docs =>{
-        res.status(200).json(docs)
+    .then((docs) => {
+      res.status(200).json(docs)
     })
 })
 
@@ -21,10 +23,9 @@ router.post('/signup', (req, res, next) => {
       if (user.length >= 1) {
         return res.status(409).json({
           message: 'User already exxist',
-          
         })
       } else {
-        bcrypt.hash(req.body.userPassword, 10, function (err, hash) {
+        bcrypt.hash(req.body.userPassword, 10, (err, hash) => {
           if (err) {
             return res.status(500).json({
               error: err,
@@ -41,13 +42,13 @@ router.post('/signup', (req, res, next) => {
                 console.log(result, '123')
                 res.status(201).json({
                   message: 'User created',
-                  user:user
+                  user: user,
                 })
               })
               .catch((err) => {
                 res.status(500).json({
                   error: err,
-                  message:'user creation failed'
+                  message: 'user creation failed',
                 })
               })
           }
@@ -57,8 +58,52 @@ router.post('/signup', (req, res, next) => {
 })
 
 // Get order By ID route
-router.get('/:orderId', (req, res, next) => {
- 
+router.post('/login', (req, res, next) => {
+  const userPassword = req.body.userPassword
+  console.log(userPassword,'555')
+  User.find({ userEmail: req.body.userEmail })
+    .exec()
+    .then((user) => {
+      if (user.length < 1) {
+        return res.status(401).json({
+          message: 'Auth failed',
+        })
+      }
+      bcrypt.compare(userPassword, user[0].userPassword, (err, result) => {
+        if (err) {
+          
+          return res.status(401).json({
+            message: 'Auth failed',
+          })
+        }
+        if (result) {
+          
+          
+         const token = jwt.sign({
+            email:user[0].userEmail,
+            userId:user[0]._id
+          },
+          process.env.JWT_KEY, 
+          {
+            expiresIn:"1h"
+          }
+          )
+          return res.status(200).json({
+            message: 'Auth sucessful',
+            token:token
+          })
+        }
+        res.status(401).json({
+          message:'Auth failed'
+        })
+      })
+    })
+    .catch(err =>{
+      res.status(500).json({
+        error: err,
+        message:'I dont know'
+      })
+    })
 })
 
 // Delete order by ID route
@@ -77,7 +122,6 @@ router.delete('/:userId', (req, res, next) => {
         error: err,
       })
     })
-
 })
 
 module.exports = router
