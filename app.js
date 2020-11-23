@@ -7,6 +7,7 @@ const bodyParser = require('body-parser')
 const productRoutes = require('./api/routes/products')
 const ordersRoutes = require('./api/routes/orders')
 const usersRoutes = require('./api/routes/users')
+const hotelProductRoute = require('./api/routes/hotelProduct')
 const mongoose = require('mongoose')
 
 // connection
@@ -37,9 +38,11 @@ app.use((req, res, next) => {
 })
 
 // routes
+app.use('/hotelProduct', hotelProductRoute)
 app.use('/products', productRoutes)
 app.use('/orders', ordersRoutes)
 app.use('/users', usersRoutes)
+
 
 app.use((req, res, next) => {
   const error = new Error('new error')

@@ -1,11 +1,8 @@
 const mongoose = require('mongoose')
 
 const OrderSchema = mongoose.Schema({
-
-  productName: String,
-  product: {type: mongoose.Schema.Types.ObjectId, ref: 'Product' , required: true},
-  quantity:{type: Number, default: 1},
+  product: [{type: mongoose.Schema.Types.ObjectId, ref: 'Product' },{type: mongoose.Schema.Types.ObjectId, ref: 'HotelProduct' }],                                          
   date: { type: Date, default: Date.now }
-})
-
+}) 
+//mongoose discriminators
 module.exports = mongoose.model('Order', OrderSchema)

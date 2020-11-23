@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const Order = require('../models/order')
 const Product = require('../models/product')
+const HotelProduct = require('../models/hotelProduct')
 exports.orders_GET_all = (req, res, next) => {
   Order.find()
     .select('product quantity _id')
@@ -36,42 +37,76 @@ exports.orders_GET_all = (req, res, next) => {
       })
     })
 }
-exports.orders_POST_order = (req, res, next) => {
+exports.orders_POST_order = async (req, res, next) => {
   // const susu = req.body.productId
   // console.log(susu, 'kkk')
-  Product.findById(req.body.productId)
-    .then((product) => {
-      if (!product) {
-        return res.status(404).json({
-          message: 'Product not found',
-        })
-      }
-      const order = new Order({
-        product: req.body.productId,
-        quantity: req.body.quantity,
-      })
-      return order.save()
+  try{
+
+    const productIds = req.body.productIds
+    // ['5fb407579f0d0bd5aafacb1d', '5fb4401e6376cdea60abf212']
+    
+    const promises = productIds.map(productId => {
+      console.log(productId)
+     const found1 = Product.findOne({_id: mongoose.Types.ObjectId(productId),productInventory:{$gt:0}}).orFail().exec()
+    
+    //  const found2 = HotelProduct.findOne({_id: mongoose.Types.ObjectId(productId),productInventory:{$gt:0}}).orFail().exec()
+   
+     return found1
+      
+     
+    });
+    console.log(promises,'ppp')
+    const products=  await Promise.all(promises)
+    
+    const newOrder = new Order({
+      product:products,
     })
-    .then((result) => {
-      res.status(201).json({
-        message: 'post order request',
-        createdOrder: {
-          _id: result._id,
-          product: result.product,
-          quantity: result.quantity,
-          request: {
-            type: 'GET',
-            url: 'http://localhost:5000/orders/' + result._id,
-          },
-        },
-      })
-    })
-    .catch((err) => {
-      console.log(err)
-      res.status(500).json({
-        message: err,
-      })
-    })
+
+   await newOrder.save()
+
+
+    res.json(newOrder);
+  }catch(err) {
+
+ res.status(404).json({
+  //  error:err,
+   filter:err.filter
+  })
+
+  }
+  // Product.findById(req.body.productId)
+  //   .then((product) => {
+  //     if (!product) {
+  //       return res.status(404).json({
+  //         message: 'Product not found',
+  //       })
+  //     }
+  //     const order = new Order({
+  //       product: req.body.productId,
+  //       quantity: req.body.quantity,
+  //     })
+  //     return order.save()
+  //   })
+  //   .then((result) => {
+  //     res.status(201).json({
+  //       message: 'post order request',
+  //       createdOrder: {
+  //         _id: result._id,
+  //         product: result.product,
+  //         quantity: result.quantity,
+  //         request: {
+  //           type: 'GET',
+  //           url: 'http://localhost:5000/orders/' + result._id,
+  //         },
+  //       },
+  //     })
+  //   })
+  //   .catch((err) => {
+  //     console.log(err)
+  //     res.status(500).json({
+  //       message: err,
+  //     })
+  //   })
 }
 
 exports.orders_GET_singleOrder = (req, res, next) => {

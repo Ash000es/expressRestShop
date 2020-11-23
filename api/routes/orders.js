@@ -8,7 +8,7 @@ const ordersController = require('../controllers/orders')
 router.get('/', checkAuth, ordersController.orders_GET_all)
 
 // Post order route
-router.post('/', checkAuth, ordersController.orders_POST_order)
+router.post('/', ordersController.orders_POST_order)
 
 // Get order By ID route
 router.get('/:orderId', checkAuth, ordersController.orders_GET_singleOrder)
