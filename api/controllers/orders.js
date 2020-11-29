@@ -43,9 +43,12 @@ exports.orders_POST_order = async (req, res, next) => {
   try{
 
     const productIds = req.body.productIds
+    const hotelProductIds = req.body.hotelProductIds
     // ['5fb407579f0d0bd5aafacb1d', '5fb4401e6376cdea60abf212']
     
-    const promises = productIds.map(productId => {
+    const productpromises = [];
+    const hotelpromises = [];
+    productpromises.push(...productIds.map(productId => {
       console.log(productId)
      const found1 = Product.findOne({_id: mongoose.Types.ObjectId(productId),productInventory:{$gt:0}}).orFail().exec()
     
@@ -54,12 +57,23 @@ exports.orders_POST_order = async (req, res, next) => {
      return found1
       
      
-    });
-    console.log(promises,'ppp')
-    const products=  await Promise.all(promises)
+    }));
+    hotelpromises.push(...hotelProductIds.map(productId => {
+      console.log(productId)
+     const found1 = HotelProduct.findOne({_id: mongoose.Types.ObjectId(productId),productInventory:{$gt:0}}).orFail().exec()
+    
+    //  const found2 = HotelProduct.findOne({_id: mongoose.Types.ObjectId(productId),productInventory:{$gt:0}}).orFail().exec()
+   
+     return found1
+      
+     
+    }));
+   
+    const products=  await Promise.all(productpromises)
+    const hotels=  await Promise.all(hotelpromises)
     
     const newOrder = new Order({
-      product:products,
+      product:[...products,...hotels],
     })
 
    await newOrder.save()
@@ -69,7 +83,7 @@ exports.orders_POST_order = async (req, res, next) => {
   }catch(err) {
 
  res.status(404).json({
-  //  error:err,
+   error:err,
    filter:err.filter
   })
 

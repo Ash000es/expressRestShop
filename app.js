@@ -8,6 +8,7 @@ const productRoutes = require('./api/routes/products')
 const ordersRoutes = require('./api/routes/orders')
 const usersRoutes = require('./api/routes/users')
 const hotelProductRoute = require('./api/routes/hotelProduct')
+const hotelBedsRoute = require('./api/routes/hotelsBed')
 const mongoose = require('mongoose')
 
 // connection
@@ -42,6 +43,7 @@ app.use('/hotelProduct', hotelProductRoute)
 app.use('/products', productRoutes)
 app.use('/orders', ordersRoutes)
 app.use('/users', usersRoutes)
+app.use('/hotelBeds',hotelBedsRoute)
 
 
 app.use((req, res, next) => {
