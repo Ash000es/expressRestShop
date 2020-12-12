@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const mongoose = require('mongoose')
 const multer = require('multer')
+const checkAuth = require('../Auth/checkAuthen')
 const HotelProduct = require('../models/hotelProduct')
 
 router.get('/', (req,res,next)=>{
@@ -13,14 +14,17 @@ router.get('/', (req,res,next)=>{
 
 })
 
-router.post('/',(req, res, next) => {
+router.post('/',checkAuth, (req, res, next) => {
     
     const convertedInventory = Number(req.body.productInventory)
   
     const hotelproduct = new HotelProduct({
         hotelName:req.body.hotelName,
         location:req.body.location,
-        productInventory: convertedInventory
+        productInventory: convertedInventory,
+        images:req.body.images,
+        amenities:req.body.amenities,
+        rooms:req.body.rooms
     })
     hotelproduct
       .save()

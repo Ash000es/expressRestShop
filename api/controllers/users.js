@@ -4,6 +4,27 @@ const mongoose = require('mongoose')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const User = require('../models/user')
+const jwtDecode = require('jwt-decode')
+// const { hashPassword, verifyPassword } = require('../../Utils')
+const hashPassword = (password) => {
+  return new Promise((resolve, reject) => {
+    bcrypt.genSalt(12, (err, salt) => {
+      if (err) {
+        reject(err)
+      }
+      bcrypt.hash(password, salt, (err, hash) => {
+        if (err) {
+          reject(err)
+        }
+        resolve(hash)
+      })
+    })
+  })
+}
+
+const verifyPassword = (passwordAttempt, hashedPassword) => {
+  return bcrypt.compare(passwordAttempt, hashedPassword)
+}
 
 exports.users_GET_user = (req, res, next) => {
   User.find()
@@ -12,90 +33,122 @@ exports.users_GET_user = (req, res, next) => {
       res.status(200).json(docs)
     })
 }
-exports.users_CREATE_user = (req, res, next) => {
-  User.find({ userEmail: req.body.userEmail })
-    .exec()
-    .then((user) => {
-      if (user.length >= 1) {
-        return res.status(409).json({
-          message: 'User already exxist',
-        })
-      } else {
-        bcrypt.hash(req.body.userPassword, 10, (err, hash) => {
-          if (err) {
-            return res.status(500).json({
-              error: err,
-            })
-          } else {
-            const user = new User({
-              userEmail: req.body.userEmail,
-              userPassword: hash,
-            })
+exports.users_CREATE_user = async (req, res, next) => {
+  try {
+    const { username, firstName, lastName, password } = req.body
+    console.log(username, firstName, lastName, password, 'hased')
 
-            user
-              .save()
-              .then((result) => {
-                console.log(result, '123')
-                res.status(201).json({
-                  message: 'User created',
-                  user: user,
-                })
-              })
-              .catch((err) => {
-                res.status(500).json({
-                  error: err,
-                  message: 'user creation failed',
-                })
-              })
-          }
-        })
+    const hashedPassword = await hashPassword(password)
+    console.log(hashedPassword, 'hased')
+
+    const userData = {
+      userEmail: username.toLowerCase(),
+      firstName,
+      lastName,
+      userPassword: hashedPassword,
+      role: 'admin'
+    }
+    console.log(userData, 'userData')
+
+    const existingEmail = await User.findOne({
+      userEmail: userData.userEmail
+    }).lean()
+
+    if (existingEmail) {
+      console.log('found..')
+      return res.status(400).json({ message: 'Email already exists' })
+    }
+
+    const newUser = new User(userData)
+    const savedUser = await newUser.save()
+
+    if (savedUser) {
+      console.log('saved..')
+      const token = jwt.sign(userData, process.env.JWT_KEY, {
+        expiresIn: '1h'
+      })
+      const decodedToken = jwtDecode(token)
+      const expiresAt = decodedToken.exp
+
+      const { firstName, lastName, userEmail, role } = savedUser
+
+      const userInfo = {
+        firstName,
+        lastName,
+        userEmail,
+        role
       }
+
+      return res.json({
+        message: 'User created!',
+        token,
+        userInfo,
+        expiresAt
+      })
+    } else {
+      console.log('problem ')
+      return res.status(400).json({
+        message: 'There was a problem creating your account'
+      })
+    }
+  } catch (err) {
+    return res.status(400).json({
+      message: 'There was a problem creating your account'
     })
+  }
 }
-exports.users_LOGIN_user = (req, res, next) => {
-  const userPassword = req.body.userPassword
+exports.users_LOGIN_user = async (req, res, next) => {
+  try {
+    const userPassword = req.body.password
+    const userEmail = req.body.username
+    console.log(userPassword, 'pass')
+    console.log(userEmail, 'email')
+    const user = await User.findOne({
+      userEmail: userEmail
+    }).lean()
 
-  User.find({ userEmail: req.body.userEmail })
-    .exec()
-    .then((user) => {
-      if (user.length < 1) {
-        return res.status(401).json({
-          message: 'Auth failed',
-        })
-      }
-      bcrypt.compare(userPassword, user[0].userPassword, (err, result) => {
-        if (err) {
-          return res.status(401).json({
-            message: 'Auth failed',
-          })
-        }
-        if (result) {
-          const token = jwt.sign(
-            {
-              email: user[0].userEmail,
-              userId: user[0]._id,
-            },
-            process.env.JWT_KEY,
-            {
-              expiresIn: '1h',
-            }
-          )
-          return res.status(200).json({
-            message: 'Auth sucessful',
-            token: token,
-          })
-        }
-        res.status(401).json({
-          message: 'Auth failed',
-        })
+    if (!user) {
+      console.log('cant find')
+      return res.status(403).json({
+        message: 'Wrong email or password.'
       })
-    })
-    .catch((err) => {
-      res.status(500).json({
-        error: err,
-        message: 'I dont know',
+    }
+    const passwordValid = await verifyPassword(userPassword, user.userPassword)
+
+    if (passwordValid) {
+      console.log('valid')
+      const { userEmail, _id, ...rest } = user
+      const userInfo = Object.assign({}, { ...rest })
+
+      const token = jwt.sign(
+        {
+          email: user.userEmail,
+          userId: user._id
+        },
+        process.env.JWT_KEY,
+        {
+          expiresIn: '1h'
+        }
+      )
+
+      const decodedToken = jwtDecode(token)
+      const expiresAt = decodedToken.exp
+
+      res.json({
+        message: 'Authentication successful!',
+        token,
+        userInfo,
+        expiresAt
       })
-    })
+    } else {
+      res.status(403).json({
+        message: 'Wrong email or password.'
+      })
+    }
+  } catch (err) {
+    console.log(err)
+    return res.status(400).json({ message: 'Something went wrong.' })
+  }
 }
 
 exports.users_DELETE_user = (req, res, next) => {
@@ -104,13 +157,13 @@ exports.users_DELETE_user = (req, res, next) => {
     .exec()
     .then((result) => {
       res.status(200).json({
-        message: 'User deleted',
+        message: 'User deleted'
       })
     })
     .catch((err) => {
       res.status(500).json({
         message: 'deleting user failed',
-        error: err,
+        error: err
       })
     })
 }

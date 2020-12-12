@@ -13,6 +13,6 @@ router.post('/signup', userController.users_CREATE_user)
 router.post('/login', userController.users_LOGIN_user)
 
 // Delete USER by ID route
-router.delete('/:userId',checkAuth, userController.users_DELETE_user)
+router.delete('/:userId', checkAuth, userController.users_DELETE_user)
 
 module.exports = router
