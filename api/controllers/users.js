@@ -101,8 +101,7 @@ exports.users_LOGIN_user = async (req, res, next) => {
   try {
     const userPassword = req.body.password
     const userEmail = req.body.username
-    console.log(userPassword, 'pass')
-    console.log(userEmail, 'email')
+
     const user = await User.findOne({
       userEmail: userEmail
     }).lean()
@@ -117,8 +116,8 @@ exports.users_LOGIN_user = async (req, res, next) => {
 
     if (passwordValid) {
       console.log('valid')
-      const { userEmail, _id, ...rest } = user
-      const userInfo = Object.assign({}, { ...rest })
+      const { userEmail, _id, role, userPassword, firstName, lastName } = user
+      const userInfo = Object.assign({}, { userEmail, _id, role, firstName, lastName })
 
       const token = jwt.sign(
         {
