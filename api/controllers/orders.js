@@ -38,8 +38,6 @@ exports.orders_GET_all = (req, res, next) => {
     })
 }
 exports.orders_POST_order = async (req, res, next) => {
-  // const susu = req.body.productId
-  // console.log(susu, 'kkk')
   try {
     const productIds = req.body.productIds
     const hotelProductIds = req.body.hotelProductIds
@@ -98,8 +96,9 @@ exports.orders_POST_order = async (req, res, next) => {
 
 exports.orders_GET_singleOrder = (req, res, next) => {
   const idOfOrder = req.params.orderId
+  console.log(idOfOrder, 'id')
   Order.findById(idOfOrder)
-    .populate('product')
+    // .populate('product')
     .exec()
     .then((order) => {
       if (!order) {
@@ -107,6 +106,7 @@ exports.orders_GET_singleOrder = (req, res, next) => {
           message: 'Order not found'
         })
       }
+
       res.status(200).json({
         order: order,
         request: {
