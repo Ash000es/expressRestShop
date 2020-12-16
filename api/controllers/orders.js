@@ -18,109 +18,82 @@ exports.orders_GET_all = (req, res, next) => {
               quantity: doc.quantity,
               request: {
                 type: 'GET',
-                url: 'http://localhost:5000/orders/' + doc._id,
-              },
+                url: 'http://localhost:5000/orders/' + doc._id
+              }
             }
-          }),
+          })
         }
         res.status(200).json(modifiedDocs)
       } else {
         res.status(404).json({
-          message: 'no items found',
+          message: 'no items found'
         })
       }
     })
     .catch((err) => {
       console.log(err)
       res.status(500).json({
-        message: err,
+        message: err
       })
     })
 }
 exports.orders_POST_order = async (req, res, next) => {
   // const susu = req.body.productId
   // console.log(susu, 'kkk')
-  try{
-
+  try {
     const productIds = req.body.productIds
     const hotelProductIds = req.body.hotelProductIds
     // ['5fb407579f0d0bd5aafacb1d', '5fb4401e6376cdea60abf212']
-    
-    const productpromises = [];
-    const hotelpromises = [];
-    productpromises.push(...productIds.map(productId => {
-      console.log(productId)
-     const found1 = Product.findOne({_id: mongoose.Types.ObjectId(productId),productInventory:{$gt:0}}).orFail().exec()
-    
-    //  const found2 = HotelProduct.findOne({_id: mongoose.Types.ObjectId(productId),productInventory:{$gt:0}}).orFail().exec()
-   
-     return found1
-      
-     
-    }));
-    hotelpromises.push(...hotelProductIds.map(productId => {
-      console.log(productId)
-     const found1 = HotelProduct.findOne({_id: mongoose.Types.ObjectId(productId),productInventory:{$gt:0}}).orFail().exec()
-    
-    //  const found2 = HotelProduct.findOne({_id: mongoose.Types.ObjectId(productId),productInventory:{$gt:0}}).orFail().exec()
-   
-     return found1
-      
-     
-    }));
-   
-    const products=  await Promise.all(productpromises)
-    const hotels=  await Promise.all(hotelpromises)
-    
+
+    const productpromises = []
+    const hotelpromises = []
+    productpromises.push(
+      ...productIds.map((productId) => {
+        console.log(productId)
+        const found1 = Product.findOne({
+          _id: mongoose.Types.ObjectId(productId),
+          productInventory: { $gt: 0 }
+        })
+          .orFail()
+          .exec()
+
+        //  const found2 = HotelProduct.findOne({_id: mongoose.Types.ObjectId(productId),productInventory:{$gt:0}}).orFail().exec()
+
+        return found1
+      })
+    )
+    hotelpromises.push(
+      ...hotelProductIds.map((productId) => {
+        console.log(productId)
+        const found1 = HotelProduct.findOne({
+          _id: mongoose.Types.ObjectId(productId),
+          productInventory: { $gt: 0 }
+        })
+          .orFail()
+          .exec()
+
+        //  const found2 = HotelProduct.findOne({_id: mongoose.Types.ObjectId(productId),productInventory:{$gt:0}}).orFail().exec()
+
+        return found1
+      })
+    )
+
+    const products = await Promise.all(productpromises)
+    const hotels = await Promise.all(hotelpromises)
+
     const newOrder = new Order({
-      product:[...products,...hotels],
+      product: [...products, ...hotels]
     })
 
-   await newOrder.save()
+    await newOrder.save()
 
-
-    res.json(newOrder);
-  }catch(err) {
-
- res.status(404).json({
-   error:err,
-   filter:err.filter
-  })
-
+    res.json(newOrder)
+  } catch (err) {
+    res.status(404).json({
+      error: err,
+      filter: err.filter
+    })
   }
-  // Product.findById(req.body.productId)
-  //   .then((product) => {
-  //     if (!product) {
-  //       return res.status(404).json({
-  //         message: 'Product not found',
-  //       })
-  //     }
-  //     const order = new Order({
-  //       product: req.body.productId,
-  //       quantity: req.body.quantity,
-  //     })
-  //     return order.save()
-  //   })
-  //   .then((result) => {
-  //     res.status(201).json({
-  //       message: 'post order request',
-  //       createdOrder: {
-  //         _id: result._id,
-  //         product: result.product,
-  //         quantity: result.quantity,
-  //         request: {
-  //           type: 'GET',
-  //           url: 'http://localhost:5000/orders/' + result._id,
-  //         },
-  //       },
-  //     })
-  //   })
-  //   .catch((err) => {
-  //     console.log(err)
-  //     res.status(500).json({
-  //       message: err,
-  //     })
-  //   })
 }
 
 exports.orders_GET_singleOrder = (req, res, next) => {
@@ -131,20 +104,20 @@ exports.orders_GET_singleOrder = (req, res, next) => {
     .then((order) => {
       if (!order) {
         return res.status(404).json({
-          message: 'Order not found',
+          message: 'Order not found'
         })
       }
       res.status(200).json({
         order: order,
         request: {
           type: 'GET',
-          url: 'http://localhost:5000/orders/',
-        },
+          url: 'http://localhost:5000/orders/'
+        }
       })
     })
     .catch((err) => {
       res.status(500).json({
-        error: err,
+        error: err
       })
     })
 }
@@ -154,17 +127,50 @@ exports.orders_DELETE_singleOrder = (req, res, next) => {
     .exec()
     .then((result) => {
       res.status(200).json({
-        message: 'Order deleted',
+        message: 'Order deleted'
       })
     })
     .catch((err) => {
       res.status(500).json({
         message: 'deleting order failed',
-        error: err,
+        error: err
       })
     })
   res.status(200).json({
     message: 'order deleted',
-    orderId: idOfOrder,
+    orderId: idOfOrder
   })
 }
+// Product.findById(req.body.productId)
+//   .then((product) => {
+//     if (!product) {
+//       return res.status(404).json({
+//         message: 'Product not found',
+//       })
+//     }
+//     const order = new Order({
+//       product: req.body.productId,
+//       quantity: req.body.quantity,
+//     })
+//     return order.save()
+//   })
+//   .then((result) => {
+//     res.status(201).json({
+//       message: 'post order request',
+//       createdOrder: {
+//         _id: result._id,
+//         product: result.product,
+//         quantity: result.quantity,
+//         request: {
+//           type: 'GET',
+//           url: 'http://localhost:5000/orders/' + result._id,
+//         },
+//       },
+//     })
+//   })
+//   .catch((err) => {
+//     console.log(err)
+//     res.status(500).json({
+//       message: err,
+//     })
+//   })

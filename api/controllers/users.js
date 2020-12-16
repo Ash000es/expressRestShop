@@ -36,7 +36,6 @@ exports.users_GET_user = (req, res, next) => {
 exports.users_CREATE_user = async (req, res, next) => {
   try {
     const { username, firstName, lastName, password } = req.body
-    console.log(username, firstName, lastName, password, 'hased')
 
     const hashedPassword = await hashPassword(password)
     console.log(hashedPassword, 'hased')

@@ -17,36 +17,3 @@ router.get('/:orderId', checkAuth, ordersController.orders_GET_singleOrder)
 router.delete('/:orderId', checkAuth, ordersController.orders_DELETE_singleOrder)
 
 module.exports = router
-
-// const orderHotel={
-//     orderId:,
-//     adults: ,
-//     children:,
-//     boardCode: ,
-//     boardName: ,
-//     cancellationPolicies:,
-//     checkinDate:,
-//     checkoutDate:,
-//     dailyRates:,
-//     hotelName:,
-//     mySellingRate:,
-//     net:,
-//     taxes:,
-//     rateClass:,
-//     rateCommentsId:,
-//     rateKey:,
-//     rateType:,
-//     roomNumber:,
-//     roomType:,
-//     packaging;,
-//     paymentType:,
-// }
-
-// const orderExtra={
-//     orderId:,
-//     extraName:,
-//     extraPrice:,
-//     extraSelectionNum:,
-//     roomName:
-
-// }
