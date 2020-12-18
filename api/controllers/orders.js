@@ -98,7 +98,6 @@ exports.orders_GET_singleOrder = (req, res, next) => {
   const idOfOrder = req.params.orderId
   console.log(idOfOrder, 'id')
   Order.findById(idOfOrder)
-    // .populate('product')
     .exec()
     .then((order) => {
       if (!order) {
@@ -136,41 +135,9 @@ exports.orders_DELETE_singleOrder = (req, res, next) => {
         error: err
       })
     })
+
   res.status(200).json({
     message: 'order deleted',
     orderId: idOfOrder
   })
 }
-// Product.findById(req.body.productId)
-//   .then((product) => {
-//     if (!product) {
-//       return res.status(404).json({
-//         message: 'Product not found',
-//       })
-//     }
-//     const order = new Order({
-//       product: req.body.productId,
-//       quantity: req.body.quantity,
-//     })
-//     return order.save()
-//   })
-//   .then((result) => {
-//     res.status(201).json({
-//       message: 'post order request',
-//       createdOrder: {
-//         _id: result._id,
-//         product: result.product,
-//         quantity: result.quantity,
-//         request: {
-//           type: 'GET',
-//           url: 'http://localhost:5000/orders/' + result._id,
-//         },
-//       },
-//     })
-//   })
-//   .catch((err) => {
-//     console.log(err)
-//     res.status(500).json({
-//       message: err,
-//     })
-//   })
