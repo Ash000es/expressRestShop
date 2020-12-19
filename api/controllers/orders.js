@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const Order = require('../models/order')
 const Product = require('../models/product')
 const HotelProduct = require('../models/hotelProduct')
+
 exports.orders_GET_all = (req, res, next) => {
   Order.find()
     .select('product quantity _id')
@@ -100,7 +101,7 @@ exports.orders_POST_order = async (req, res, next) => {
 
 exports.orders_GET_singleOrder = (req, res, next) => {
   const idOfOrder = req.params.orderId
-  console.log(idOfOrder, 'id')
+  console.log(req.user, 'id')
   Order.findById(idOfOrder)
     .exec()
     .then((order) => {
