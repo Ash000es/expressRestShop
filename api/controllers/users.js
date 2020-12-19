@@ -36,10 +36,7 @@ exports.users_GET_user = (req, res, next) => {
 exports.users_CREATE_user = async (req, res, next) => {
   try {
     const { username, firstName, lastName, password } = req.body
-
     const hashedPassword = await hashPassword(password)
-    console.log(hashedPassword, 'hased')
-
     const userData = {
       userEmail: username.toLowerCase(),
       firstName,
@@ -47,15 +44,15 @@ exports.users_CREATE_user = async (req, res, next) => {
       userPassword: hashedPassword,
       role: 'admin'
     }
-    console.log(userData, 'userData')
-
     const existingEmail = await User.findOne({
       userEmail: userData.userEmail
     }).lean()
 
     if (existingEmail) {
       console.log('found..')
-      return res.status(400).json({ message: 'Email already exists' })
+      return res.status(400).json({
+        message: 'Email already exists'
+      })
     }
 
     const newUser = new User(userData)
@@ -98,9 +95,7 @@ exports.users_CREATE_user = async (req, res, next) => {
 }
 exports.users_LOGIN_user = async (req, res, next) => {
   try {
-    const userPassword = req.body.password
-    const userEmail = req.body.username
-
+    const{password:userPassword ,username:userEmail}= req.body
     const user = await User.findOne({
       userEmail: userEmail
     }).lean()
@@ -116,13 +111,19 @@ exports.users_LOGIN_user = async (req, res, next) => {
     if (passwordValid) {
       console.log('valid')
       const { userEmail, _id, role, userPassword, firstName, lastName } = user
-      const userInfo = Object.assign({}, { userEmail, _id, role, firstName, lastName })
+      const userInfo = Object.assign(
+        {},
+        {
+          userEmail,
+          _id,
+          role,
+          firstName,
+          lastName
+        }
+      )
 
       const token = jwt.sign(
-        {
-          email: user.userEmail,
-          userId: user._id
-        },
+        userInfo,
         process.env.JWT_KEY,
         {
           expiresIn: '1h'
@@ -145,13 +146,17 @@ exports.users_LOGIN_user = async (req, res, next) => {
     }
   } catch (err) {
     console.log(err)
-    return res.status(400).json({ message: 'Something went wrong.' })
+    return res.status(400).json({
+      message: 'Something went wrong.'
+    })
   }
 }
 
 exports.users_DELETE_user = (req, res, next) => {
   const idOfUser = req.params.userId
-  User.remove({ _id: idOfUser })
+  User.remove({
+    _id: idOfUser
+  })
     .exec()
     .then((result) => {
       res.status(200).json({

@@ -49,9 +49,11 @@ exports.orders_POST_order = async (req, res, next) => {
       ...productIds.map((productId) => {
         console.log(productId)
         const found1 = Product.findOne({
-          _id: mongoose.Types.ObjectId(productId),
-          productInventory: { $gt: 0 }
-        })
+            _id: mongoose.Types.ObjectId(productId),
+            productInventory: {
+              $gt: 0
+            }
+          })
           .orFail()
           .exec()
 
@@ -64,9 +66,11 @@ exports.orders_POST_order = async (req, res, next) => {
       ...hotelProductIds.map((productId) => {
         console.log(productId)
         const found1 = HotelProduct.findOne({
-          _id: mongoose.Types.ObjectId(productId),
-          productInventory: { $gt: 0 }
-        })
+            _id: mongoose.Types.ObjectId(productId),
+            productInventory: {
+              $gt: 0
+            }
+          })
           .orFail()
           .exec()
 
@@ -122,7 +126,9 @@ exports.orders_GET_singleOrder = (req, res, next) => {
 }
 exports.orders_DELETE_singleOrder = (req, res, next) => {
   const idOfOrder = req.params.orderId
-  Order.remove({ _id: idOfOrder })
+  Order.remove({
+      _id: idOfOrder
+    })
     .exec()
     .then((result) => {
       res.status(200).json({
