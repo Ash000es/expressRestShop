@@ -31,7 +31,7 @@ const upload = multer({
 router.get('/', productsController.products_GET_all)
 
 // POST new product route
-router.post('/', checkAuth, upload.single('productNewImage'))
+router.post('/', checkAuth, upload.single('productNewImage'), productsController.products_POST_product)
 
 // GET Product by ID route
 router.get('/:productId', productsController.products_GET_singleProduct)

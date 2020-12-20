@@ -65,16 +65,19 @@ exports.products_GET_singleProduct = (req, res, next) => {
 }
 
 exports.products_POST_product = (req, res, next) => {
+  const {_id: userId} = req.userData
   const convertedPrice = Number(req.body.productPrice)
   const convertedInventory = Number(req.body.productInventory)
+  console.log(userId)
 
   const product = new Product({
+    createdBy:userId,
     productName: req.body.productName,
     productPrice: convertedPrice,
     productInventory: convertedInventory,
     productDescription: req.body.productDescription,
     productImage: req.body.productImage,
-    productNewImage: req.file.path,
+    productNewImage: req.file.path
   })
   product
     .save()

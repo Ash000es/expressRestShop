@@ -4,6 +4,7 @@ const {
 } = require('../models/user')
 
 module.exports = (req, res, next) => {
+  // console.log(req,'from auth')
   try {
 
     const token = req.headers.authorization.split(' ')[1]
