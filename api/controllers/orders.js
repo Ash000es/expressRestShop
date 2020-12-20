@@ -101,7 +101,7 @@ exports.orders_POST_order = async (req, res, next) => {
 
 exports.orders_GET_singleOrder = (req, res, next) => {
   const idOfOrder = req.params.orderId
-  console.log(req.user, 'id')
+  console.log(req.userData._id, 'id')
   Order.findById(idOfOrder)
     .exec()
     .then((order) => {
@@ -110,7 +110,7 @@ exports.orders_GET_singleOrder = (req, res, next) => {
           message: 'Order not found'
         })
       }
-
+    // console.log(order,'oreder here')
       res.status(200).json({
         order: order,
         request: {
