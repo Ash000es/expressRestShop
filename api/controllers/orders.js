@@ -43,7 +43,6 @@ exports.orders_POST_order = async (req, res, next) => {
     const productIds = req.body.productIds
     const hotelProductIds = req.body.hotelProductIds
     // ['5fb407579f0d0bd5aafacb1d', '5fb4401e6376cdea60abf212']
-
     const productpromises = []
     const hotelpromises = []
     productpromises.push(
@@ -57,9 +56,7 @@ exports.orders_POST_order = async (req, res, next) => {
           })
           .orFail()
           .exec()
-
         //  const found2 = HotelProduct.findOne({_id: mongoose.Types.ObjectId(productId),productInventory:{$gt:0}}).orFail().exec()
-
         return found1
       })
     )
@@ -74,22 +71,16 @@ exports.orders_POST_order = async (req, res, next) => {
           })
           .orFail()
           .exec()
-
         //  const found2 = HotelProduct.findOne({_id: mongoose.Types.ObjectId(productId),productInventory:{$gt:0}}).orFail().exec()
-
         return found1
       })
     )
-
     const products = await Promise.all(productpromises)
     const hotels = await Promise.all(hotelpromises)
-
     const newOrder = new Order({
       product: [...products, ...hotels]
     })
-
     await newOrder.save()
-
     res.json(newOrder)
   } catch (err) {
     res.status(404).json({
@@ -142,7 +133,6 @@ exports.orders_DELETE_singleOrder = (req, res, next) => {
         error: err
       })
     })
-
   res.status(200).json({
     message: 'order deleted',
     orderId: idOfOrder

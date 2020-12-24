@@ -54,10 +54,8 @@ exports.users_CREATE_user = async (req, res, next) => {
         message: 'Email already exists'
       })
     }
-
     const newUser = new User(userData)
     const savedUser = await newUser.save()
-
     if (savedUser) {
       console.log('saved..')
       const token = jwt.sign(userData, process.env.JWT_KEY, {
@@ -65,16 +63,16 @@ exports.users_CREATE_user = async (req, res, next) => {
       })
       const decodedToken = jwtDecode(token)
       const expiresAt = decodedToken.exp
-
       const { firstName, lastName, userEmail, role } = savedUser
-
       const userInfo = {
         firstName,
         lastName,
         userEmail,
         role
       }
-
+      res.cookie('token', token, {
+        httpOnly: true
+      })
       return res.json({
         message: 'User created!',
         token,
@@ -94,8 +92,9 @@ exports.users_CREATE_user = async (req, res, next) => {
   }
 }
 exports.users_LOGIN_user = async (req, res, next) => {
+  console.log('login')
   try {
-    const{password:userPassword ,username:userEmail}= req.body
+    const { password: userPassword, username: userEmail } = req.body
     const user = await User.findOne({
       userEmail: userEmail
     }).lean()
@@ -111,6 +110,7 @@ exports.users_LOGIN_user = async (req, res, next) => {
     if (passwordValid) {
       console.log('valid')
       const { userEmail, _id, role, userPassword, firstName, lastName } = user
+      console.log('one in user')
       const userInfo = Object.assign(
         {},
         {
@@ -121,17 +121,15 @@ exports.users_LOGIN_user = async (req, res, next) => {
           lastName
         }
       )
-
-      const token = jwt.sign(
-        userInfo,
-        process.env.JWT_KEY,
-        {
-          expiresIn: '1h'
-        }
-      )
-
+      const token = jwt.sign(userInfo, process.env.JWT_KEY, {
+        expiresIn: '1h'
+      })
+      console.log(token, 'token in user')
       const decodedToken = jwtDecode(token)
       const expiresAt = decodedToken.exp
+      res.cookie('token', token, {
+        httpOnly: true
+      })
 
       res.json({
         message: 'Authentication successful!',
