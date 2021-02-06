@@ -7,7 +7,7 @@ const User = require('../models/user')
 const jwtDecode = require('jwt-decode')
 const sgMail = require('@sendgrid/mail')
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
-console.log(process.env.REACT_APP_firebaseKey, 'cccccc')
+
 // const { hashPassword, verifyPassword } = require('../../Utils')
 const hashPassword = (password) => {
   return new Promise((resolve, reject) => {
