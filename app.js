@@ -11,6 +11,9 @@ const hotelBedsRoute = require('./api/routes/hotelsBed')
 const csrfRoutes = require('./api/routes/csrfRoutes')
 const mongoose = require('mongoose')
 const cookieParser = require('cookie-parser')
+const sgMail = require('@sendgrid/mail')
+sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+console.log(process.env.SENDGRID_API_KEY, 'cccccc')
 const csrf = require('csurf')
 const csrfProtection = csrf({
   cookie: true

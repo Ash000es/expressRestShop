@@ -5,6 +5,9 @@ const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const User = require('../models/user')
 const jwtDecode = require('jwt-decode')
+const sgMail = require('@sendgrid/mail')
+sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+console.log(process.env.REACT_APP_firebaseKey, 'cccccc')
 // const { hashPassword, verifyPassword } = require('../../Utils')
 const hashPassword = (password) => {
   return new Promise((resolve, reject) => {
@@ -34,7 +37,15 @@ exports.users_GET_user = (req, res, next) => {
     })
 }
 exports.users_CREATE_user = async (req, res, next) => {
+  const msg = {
+    to: 'test@example.com',
+    from: 'test@example.com', // Use the email address or domain you verified above
+    subject: 'Sending with Twilio SendGrid is Fun',
+    text: 'and easy to do anywhere, even with Node.js',
+    html: '<strong>and easy to do anywhere, even with Node.js</strong>'
+  }
   try {
+    await sgMail.send(msg)
     const { username, firstName, lastName, password } = req.body
     const hashedPassword = await hashPassword(password)
     const userData = {
