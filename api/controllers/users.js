@@ -7,6 +7,7 @@ const User = require('../models/user')
 const jwtDecode = require('jwt-decode')
 const sgMail = require('@sendgrid/mail')
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+const crypto = require('crypto')
 
 // const { hashPassword, verifyPassword } = require('../../Utils')
 const hashPassword = (password) => {
@@ -58,6 +59,8 @@ exports.users_CREATE_user = async (req, res, next) => {
       firstName,
       lastName,
       userPassword: hashedPassword,
+      emailToken: crypto.randomBytes(64).toString('hex'),
+      isVerified: false,
       role: 'admin'
     }
     const existingEmail = await User.findOne({

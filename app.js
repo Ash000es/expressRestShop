@@ -14,6 +14,7 @@ const cookieParser = require('cookie-parser')
 const sgMail = require('@sendgrid/mail')
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 const expressSanitizer = require('express-sanitizer')
+const crypto = require('crypto')
 
 const csrf = require('csurf')
 const csrfProtection = csrf({
