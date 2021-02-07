@@ -11,6 +11,8 @@ router.post('/signup', userController.users_CREATE_user)
 
 // LOGIN route
 router.post('/login', userController.users_LOGIN_user)
+// verify email
+router.get('/verify-email', userController.users_Verify_user)
 
 // Delete USER by ID route
 router.delete('/:userId', checkAuth, userController.users_DELETE_user)

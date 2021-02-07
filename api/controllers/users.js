@@ -38,22 +38,16 @@ exports.users_GET_user = (req, res, next) => {
     })
 }
 exports.users_CREATE_user = async (req, res, next) => {
-  let { username, firstName, lastName, password } = req.body
-  username = req.sanitize(username)
-  firstName = req.sanitize(firstName)
-  lastName = req.sanitize(lastName)
-  password = req.sanitize(password)
-  const msg = {
-    to: username.toLowerCase(),
-    from: 'ashrafsaad000@gmail.com', // Use the email address or domain you verified above
-    subject: 'Sending with Twilio SendGrid is Fun',
-    text: 'and easy to do anywhere, even with Node.js',
-    html: '<strong>and easy to do anywhere, even with Node.js</strong>'
-  }
   try {
-    await sgMail.send(msg)
+    console.log('one')
+    let { username, firstName, lastName, password } = req.body
 
+    username = req.sanitize(username)
+    firstName = req.sanitize(firstName)
+    lastName = req.sanitize(lastName)
+    password = req.sanitize(password)
     const hashedPassword = await hashPassword(password)
+
     const userData = {
       userEmail: username.toLowerCase(),
       firstName,
@@ -63,6 +57,7 @@ exports.users_CREATE_user = async (req, res, next) => {
       isVerified: false,
       role: 'admin'
     }
+
     const existingEmail = await User.findOne({
       userEmail: userData.userEmail
     }).lean()
@@ -73,43 +68,94 @@ exports.users_CREATE_user = async (req, res, next) => {
         message: 'Email already exists'
       })
     }
+    const msg = {
+      to: username.toLowerCase(),
+      from: 'ashrafsaad000@gmail.com', // Use the email address or domain you verified above
+      subject: 'Ladybirdy - please verify your email address',
+      text: `Hello, Thank you for registering on our site.
+    Please copy and paste the address below to verify your account.
+    http://${req.headers.host}/verify-email?token=${userData.emailToken}`,
+      html: `
+        <h2>Hello, Thank you for registering on our site.</h2>
+        <p>Please copy and paste the address below to verify your account.</p>
+    <a href='http://${req.headers.host}/users/verify-email?token=${userData.emailToken}'>Verify your account</a> 
+        `
+    }
+    console.log('three')
+    await sgMail.send(msg)
+    console.log('four')
+
+    // return res.redirect('/')
+
     const newUser = new User(userData)
     const savedUser = await newUser.save()
-    if (savedUser) {
-      console.log('saved..')
-      const token = jwt.sign(userData, process.env.JWT_KEY, {
-        expiresIn: '1h'
-      })
-      const decodedToken = jwtDecode(token)
-      const expiresAt = decodedToken.exp
-      const { firstName, lastName, userEmail, role } = savedUser
-      const userInfo = {
-        firstName,
-        lastName,
-        userEmail,
-        role
-      }
-      res.cookie('token', token, {
-        httpOnly: true
-      })
-      return res.json({
-        message: 'User created!',
-        token,
-        userInfo,
-        expiresAt
-      })
-    } else {
-      console.log('problem ')
-      return res.status(400).json({
-        message: 'There was a problem creating your account'
-      })
-    }
+    return res.status(200).json({
+      message: 'Thank you for registering, please check your email for verification link'
+    })
+    // if (savedUser) {
+    //   console.log('saved..')
+    //   const token = jwt.sign(userData, process.env.JWT_KEY, {
+    //     expiresIn: '1h'
+    //   })
+    //   const decodedToken = jwtDecode(token)
+    //   const expiresAt = decodedToken.exp
+    //   const { firstName, lastName, userEmail, role } = savedUser
+    //   const userInfo = {
+    //     firstName,
+    //     lastName,
+    //     userEmail,
+    //     role
+    //   }
+    //   res.cookie('token', token, {
+    //     httpOnly: true
+    //   })
+    //   return res.json({
+    //     message: 'User created!',
+    //     token,
+    //     userInfo,
+    //     expiresAt
+    //   })
+    // } else {
+    //   console.log('problem ')
+    //   return res.status(400).json({
+    //     message: 'There was a problem creating your account'
+    //   })
+    // }
   } catch (err) {
+    console.log('ppp error')
     return res.status(400).json({
-      message: 'There was a problem creating your account'
+      message: 'There was a problem creating your account 121'
     })
   }
 }
+exports.users_Verify_user = async (req, res, next) => {
+  console.log('123456789')
+  const token = req.query.token
+
+  try {
+    const user = await User.findOne({ emailToken: token })
+    console.log(user, 'iam user')
+    if (!user) {
+      return res.status(400).json({
+        message: 'There was a problem with your token'
+      })
+    } else {
+      user.emailToken = null
+      user.isVerified = true
+      await user.save()
+
+      res.status(200).json({
+        message: 'allgood here'
+      })
+    }
+  } catch (err) {
+    console.log(err)
+    return res.status(400).json({
+      message: 'Something went wrong in the verify step.'
+    })
+  }
+}
+
 exports.users_LOGIN_user = async (req, res, next) => {
   console.log('login')
   try {
