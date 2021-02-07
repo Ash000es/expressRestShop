@@ -13,6 +13,7 @@ const mongoose = require('mongoose')
 const cookieParser = require('cookie-parser')
 const sgMail = require('@sendgrid/mail')
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+const expressSanitizer = require('express-sanitizer')
 
 const csrf = require('csurf')
 const csrfProtection = csrf({
@@ -34,8 +35,9 @@ app.use(cookieParser())
 app.use(morgan('dev'))
 app.use('/uploads', express.static('uploads'))
 app.use(cors())
-app.use(bodyParser.urlencoded({ extended: true }))
-app.use(bodyParser.json())
+app.use(express.urlencoded({ extended: true }))
+app.use(express.json())
+app.use(expressSanitizer())
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*')
   res.header(

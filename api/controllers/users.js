@@ -37,16 +37,21 @@ exports.users_GET_user = (req, res, next) => {
     })
 }
 exports.users_CREATE_user = async (req, res, next) => {
+  let { username, firstName, lastName, password } = req.body
+  username = req.sanitize(username)
+  firstName = req.sanitize(firstName)
+  lastName = req.sanitize(lastName)
+  password = req.sanitize(password)
   const msg = {
-    to: 'test@example.com',
-    from: 'test@example.com', // Use the email address or domain you verified above
+    to: username.toLowerCase(),
+    from: 'ashrafsaad000@gmail.com', // Use the email address or domain you verified above
     subject: 'Sending with Twilio SendGrid is Fun',
     text: 'and easy to do anywhere, even with Node.js',
     html: '<strong>and easy to do anywhere, even with Node.js</strong>'
   }
   try {
     await sgMail.send(msg)
-    const { username, firstName, lastName, password } = req.body
+
     const hashedPassword = await hashPassword(password)
     const userData = {
       userEmail: username.toLowerCase(),
