@@ -78,7 +78,7 @@ exports.users_CREATE_user = async (req, res, next) => {
       html: `
         <h2>Hello, Thank you for registering on our site.</h2>
         <p>Please copy and paste the address below to verify your account.</p>
-    <a href='http://${req.headers.host}/users/verify-email?token=${userData.emailToken}'>Verify your account</a> 
+    <a href='http://localhost:5000/users/verify-email?token=${userData.emailToken}'>Verify your account</a> 
         `
     }
     console.log('three')
@@ -134,7 +134,6 @@ exports.users_Verify_user = async (req, res, next) => {
 
   try {
     const user = await User.findOne({ emailToken: token })
-    console.log(user, 'iam user')
     if (!user) {
       return res.status(400).json({
         message: 'There was a problem with your token'
@@ -144,8 +143,32 @@ exports.users_Verify_user = async (req, res, next) => {
       user.isVerified = true
       await user.save()
 
+      let { userEmail, firstName, lastName, role, _id } = user
+      const userInfo = Object.assign(
+        {},
+        {
+          userEmail,
+          _id,
+          role,
+          firstName,
+          lastName
+        }
+      )
+      const token = jwt.sign(userInfo, process.env.JWT_KEY, {
+        expiresIn: '1h'
+      })
+      console.log(token, 'token in user')
+      const decodedToken = jwtDecode(token)
+      const expiresAt = decodedToken.exp
+      res.cookie('token', token, {
+        httpOnly: true
+      })
+
       res.status(200).json({
-        message: 'allgood here'
+        message: 'Authentication successful!',
+        token,
+        userInfo,
+        expiresAt
       })
     }
   } catch (err) {
@@ -157,7 +180,6 @@ exports.users_Verify_user = async (req, res, next) => {
 }
 
 exports.users_LOGIN_user = async (req, res, next) => {
-  console.log('login')
   try {
     const { password: userPassword, username: userEmail } = req.body
     const user = await User.findOne({
