@@ -39,7 +39,6 @@ exports.users_GET_user = (req, res, next) => {
 }
 exports.users_CREATE_user = async (req, res, next) => {
   try {
-    console.log('one')
     let { username, firstName, lastName, password } = req.body
 
     username = req.sanitize(username)
@@ -63,7 +62,6 @@ exports.users_CREATE_user = async (req, res, next) => {
     }).lean()
 
     if (existingEmail) {
-      console.log('found..')
       return res.status(400).json({
         message: 'Email already exists'
       })
@@ -81,9 +79,8 @@ exports.users_CREATE_user = async (req, res, next) => {
     <a href='http://localhost:5000/users/verify-email?token=${userData.emailToken}'>Verify your account</a> 
         `
     }
-    console.log('three')
+
     await sgMail.send(msg)
-    console.log('four')
 
     // return res.redirect('/')
 
@@ -122,14 +119,12 @@ exports.users_CREATE_user = async (req, res, next) => {
     //   })
     // }
   } catch (err) {
-    console.log('ppp error')
     return res.status(400).json({
       message: 'There was a problem creating your account 121'
     })
   }
 }
 exports.users_Verify_user = async (req, res, next) => {
-  console.log('123456789')
   const token = req.query.token
 
   try {
@@ -157,7 +152,7 @@ exports.users_Verify_user = async (req, res, next) => {
       const token = jwt.sign(userInfo, process.env.JWT_KEY, {
         expiresIn: '1h'
       })
-      console.log(token, 'token in user')
+
       const decodedToken = jwtDecode(token)
       const expiresAt = decodedToken.exp
       res.cookie('token', token, {
@@ -187,7 +182,6 @@ exports.users_LOGIN_user = async (req, res, next) => {
     }).lean()
 
     if (!user) {
-      console.log('cant find')
       return res.status(403).json({
         message: 'Wrong email or password.'
       })
@@ -195,9 +189,8 @@ exports.users_LOGIN_user = async (req, res, next) => {
     const passwordValid = await verifyPassword(userPassword, user.userPassword)
 
     if (passwordValid) {
-      console.log('valid')
       const { userEmail, _id, role, userPassword, firstName, lastName } = user
-      console.log('one in user')
+
       const userInfo = Object.assign(
         {},
         {
@@ -211,7 +204,7 @@ exports.users_LOGIN_user = async (req, res, next) => {
       const token = jwt.sign(userInfo, process.env.JWT_KEY, {
         expiresIn: '1h'
       })
-      console.log(token, 'token in user')
+
       const decodedToken = jwtDecode(token)
       const expiresAt = decodedToken.exp
       res.cookie('token', token, {
